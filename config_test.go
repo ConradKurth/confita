@@ -4,9 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"math"
+	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/heetch/confita/backend/env"
 
 	"github.com/heetch/confita"
 	"github.com/heetch/confita/backend"
@@ -22,6 +27,10 @@ func (s store) Get(ctx context.Context, key string) ([]byte, error) {
 	}
 
 	return []byte(data), nil
+}
+
+func (s store) String() string {
+	return "store"
 }
 
 type longRunningStore time.Duration
@@ -48,6 +57,14 @@ func (k valueUnmarshaler) UnmarshalValue(ctx context.Context, key string, to int
 	}
 
 	return json.Unmarshal(data, to)
+}
+
+func (k valueUnmarshaler) String() string {
+	return "json"
+}
+
+func (s longRunningStore) String() string {
+	return "longRunningStore"
 }
 
 func TestLoad(t *testing.T) {
@@ -225,4 +242,26 @@ func TestLoadFromValueUnmarshaler(t *testing.T) {
 	require.Equal(t, "name", s.Name)
 	require.Equal(t, 10, s.Age)
 	require.Zero(t, s.Ignored)
+}
+
+func TestBackendTag(t *testing.T) {
+	type test struct {
+		Foo string `config:"foo" backend:"store"`
+		Bar string `config:"bar" backend:"env"`
+	}
+
+	err := os.Setenv("BAR", "baz")
+	require.NoError(t, err)
+
+	myStore := make(store)
+	myStore["foo"] = "fuu"
+
+	ldr := confita.NewLoader(env.NewBackend(), myStore)
+
+	var cfg test
+	err = ldr.Load(context.Background(), &cfg)
+	require.NoError(t, err)
+
+	assert.Equal(t, "fuu", cfg.Foo)
+	assert.Equal(t, "baz", cfg.Bar)
 }

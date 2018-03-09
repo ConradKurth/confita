@@ -105,12 +105,18 @@ func (l *Loader) parseStruct(ctx context.Context, ref *reflect.Value) error {
 			}
 		}
 
+		bcknd := field.Tag.Get("backend")
+
 		var found bool
 		for _, b := range l.backends {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
+			}
+
+			if bcknd != "" && bcknd != b.String() {
+				continue
 			}
 
 			if u, ok := b.(backend.ValueUnmarshaler); ok {
