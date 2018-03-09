@@ -39,5 +39,5 @@ func (b *backendFunc) String() string {
 type ValueUnmarshaler interface {
 	UnmarshalValue(ctx context.Context, key string, to interface{}) error
 	// String returns the name of the unmarshaler for comparing with the backend tag value.
-	String()
+	String() string
 }
