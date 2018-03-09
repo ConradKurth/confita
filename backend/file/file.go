@@ -74,6 +74,10 @@ func (b *Backend) Get(ctx context.Context, key string) ([]byte, error) {
 	return nil, errors.New("not implemented")
 }
 
+func (b *Backend) String() string {
+	return b.unmarshaler.String()
+}
+
 type jsonConfig map[string]json.RawMessage
 
 func (j jsonConfig) UnmarshalValue(_ context.Context, key string, to interface{}) error {
@@ -85,6 +89,10 @@ func (j jsonConfig) UnmarshalValue(_ context.Context, key string, to interface{}
 	return json.Unmarshal(v, to)
 }
 
+func (j jsonConfig) String() string {
+	return "json"
+}
+
 type yamlConfig map[string]yamlRawMessage
 
 func (y yamlConfig) UnmarshalValue(_ context.Context, key string, to interface{}) error {
@@ -94,6 +102,10 @@ func (y yamlConfig) UnmarshalValue(_ context.Context, key string, to interface{}
 	}
 
 	return v.unmarshal(to)
+}
+
+func (y yamlConfig) String() string {
+	return "yaml"
 }
 
 // used to postpone yaml unmarshaling

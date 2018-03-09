@@ -37,3 +37,7 @@ func (b *Backend) Get(ctx context.Context, key string) ([]byte, error) {
 
 	return kv.Value, nil
 }
+
+func (b *Backend) String() string {
+	return "consul"
+}
