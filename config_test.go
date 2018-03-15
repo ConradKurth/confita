@@ -246,8 +246,8 @@ func TestLoadFromValueUnmarshaler(t *testing.T) {
 
 func TestBackendTag(t *testing.T) {
 	type test struct {
-		Foo string `config:"foo" backend:"store"`
-		Bar string `config:"bar" backend:"env"`
+		Foo string `config:"foo,backend:store"`
+		Bar string `config:"bar,backend:env"`
 	}
 
 	err := os.Setenv("BAR", "baz")

@@ -97,15 +97,18 @@ func (l *Loader) parseStruct(ctx context.Context, ref *reflect.Value) error {
 
 		key := tag
 		var required bool
+		var bcknd string
 
 		if idx := strings.Index(tag, ","); idx != -1 {
 			key = tag[:idx]
-			if tag[idx+1:] == "required" {
+			tag = tag[idx+1:]
+			if strings.Contains(tag, "required") {
 				required = true
 			}
+			if idx := strings.Index(tag, ":"); idx != -1 {
+				bcknd = tag[idx+1:]
+			}
 		}
-
-		bcknd := field.Tag.Get("backend")
 
 		var found bool
 		for _, b := range l.backends {
