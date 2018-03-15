@@ -14,7 +14,7 @@ go get -u github.com/heetch/confita
 
 ## Usage
 
-Confita scans a struct for `config` tags and calls all the backends one after another (except if the [backend tag](#backend-tag) is specified) until the key is found.
+Confita scans a struct for `config` tags and calls all the backends one after another until the key is found.
 The value is then converted into the type of the field.
 
 ### Struct layout
@@ -63,8 +63,8 @@ type Config struct {
 ```
 
 ### Backend tag
-
-As we already said, Confita will call each backend one after another. But in order to avoid some useless processing we can specify in which backend the value of a field can be found with the `backend` tag:
+By default, Confita queries each backend one after another until a key is found. However, in order to avoid some useless processing the `backend` tag can be specified to describe in which backend this key is expected to be found.
+This is especially useful when the location of the key is known beforehand.
 
 ```go
 type Config struct {
@@ -73,8 +73,6 @@ type Config struct {
   Timeout     time.Duration `config:"timeout"`
 }
 ```
-
-Thanks to this tag, the engine will search for those values exclusively in the specified backends.
 
 ### Loading configuration
 
