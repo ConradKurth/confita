@@ -29,7 +29,7 @@ func (s store) Get(ctx context.Context, key string) ([]byte, error) {
 	return []byte(data), nil
 }
 
-func (s store) String() string {
+func (store) Name() string {
 	return "store"
 }
 
@@ -42,6 +42,10 @@ func (s longRunningStore) Get(ctx context.Context, key string) ([]byte, error) {
 	case <-time.After(time.Duration(s)):
 		return []byte(time.Now().String()), nil
 	}
+}
+
+func (longRunningStore) Name() string {
+	return "longRunningStore"
 }
 
 type valueUnmarshaler store
@@ -59,12 +63,8 @@ func (k valueUnmarshaler) UnmarshalValue(ctx context.Context, key string, to int
 	return json.Unmarshal(data, to)
 }
 
-func (k valueUnmarshaler) String() string {
-	return "json"
-}
-
-func (s longRunningStore) String() string {
-	return "longRunningStore"
+func (valueUnmarshaler) Name() string {
+	return "valueUnmarshaler"
 }
 
 func TestLoad(t *testing.T) {

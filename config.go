@@ -115,7 +115,7 @@ func (l *Loader) parseStruct(ctx context.Context, ref *reflect.Value) error {
 			default:
 			}
 
-			if bcknd != "" && bcknd != b.String() {
+			if bcknd != "" && bcknd != b.Name() {
 				continue
 			}
 

@@ -36,6 +36,7 @@ func (b *Backend) Get(ctx context.Context, key string) ([]byte, error) {
 	return resp.Kvs[0].Value, nil
 }
 
-func (b *Backend) String() string {
+// Name returns the name of the backend to compare with the backend tag value.
+func (b *Backend) Name() string {
 	return "etcd"
 }

@@ -13,8 +13,7 @@ var (
 // A Backend is used to fetch values from a given key.
 type Backend interface {
 	Get(ctx context.Context, key string) ([]byte, error)
-	// String returns the name of the backend for comparing with the backend tag value.
-	String() string
+	Name() string
 }
 
 // Func creates a Backend from a function.
@@ -31,13 +30,11 @@ func (b *backendFunc) Get(ctx context.Context, key string) ([]byte, error) {
 	return b.fn(ctx, key)
 }
 
-func (b *backendFunc) String() string {
+func (b *backendFunc) Name() string {
 	return b.name
 }
 
 // A ValueUnmarshaler decodes a value identified by a key into a target.
 type ValueUnmarshaler interface {
 	UnmarshalValue(ctx context.Context, key string, to interface{}) error
-	// String returns the name of the unmarshaler for comparing with the backend tag value.
-	String() string
 }
