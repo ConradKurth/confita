@@ -68,11 +68,15 @@ This is especially useful when the location of the key is known beforehand.
 
 ```go
 type Config struct {
-  Host        string        `config:"host" backend:"env"`
-  Port        uint32        `config:"port" backend:"etcd"`
+  Host        string        `config:"host,backend=env"`
+  Port        uint32        `config:"port,required,backend=etcd"`
   Timeout     time.Duration `config:"timeout"`
 }
 ```
+
+If `required` and `backend` options are used, the `required` one have to be before the `backend` one.
+
+e.g. `config:"port,required,backend=etcd"`
 
 ### Loading configuration
 

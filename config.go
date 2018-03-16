@@ -101,12 +101,16 @@ func (l *Loader) parseStruct(ctx context.Context, ref *reflect.Value) error {
 
 		if idx := strings.Index(tag, ","); idx != -1 {
 			key = tag[:idx]
-			tag = tag[idx+1:]
-			if strings.Contains(tag, "required") {
-				required = true
-			}
-			if idx := strings.Index(tag, ":"); idx != -1 {
-				bcknd = tag[idx+1:]
+			opts := strings.Split(tag[idx+1:], ",")
+
+			for _, o := range opts {
+				if o == "required" {
+					required = true
+				}
+
+				if idx := strings.Index(o, "="); idx != -1 {
+					bcknd = o[idx+1:]
+				}
 			}
 		}
 

@@ -281,8 +281,8 @@ func (backendNotCalled) Name() string {
 
 func TestBackendTag(t *testing.T) {
 	type test struct {
-		Tikka  string `config:"tikka,backend:store"`
-		Cheese string `config:"cheese,required,backend:backendCalled"`
+		Tikka  string `config:"tikka,backend=store"`
+		Cheese string `config:"cheese,required,backend=backendCalled"`
 	}
 
 	backendNotCalled := &backendNotCalled{

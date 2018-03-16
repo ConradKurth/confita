@@ -22,9 +22,14 @@ type Backend struct {
 // NewBackend creates a configuration loader that loads from a file.
 // The content will get decoded based on the file extension and cached in the backend.
 func NewBackend(path string) *Backend {
+	name := filepath.Ext(path)
+	if name != "" {
+		name = name[1:]
+	}
+
 	return &Backend{
 		path: path,
-		name: filepath.Ext(path),
+		name: name,
 	}
 }
 
@@ -76,7 +81,7 @@ func (b *Backend) Get(ctx context.Context, key string) ([]byte, error) {
 	return nil, errors.New("not implemented")
 }
 
-// Name returns the type of the file to compare with the backend tag value.
+// Name returns the type of the file.
 func (b *Backend) Name() string {
 	return b.name
 }
