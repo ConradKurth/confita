@@ -4,14 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"math"
-	"os"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/heetch/confita/backend/env"
 
 	"github.com/heetch/confita"
 	"github.com/heetch/confita/backend"
@@ -244,24 +241,89 @@ func TestLoadFromValueUnmarshaler(t *testing.T) {
 	require.Zero(t, s.Ignored)
 }
 
-func TestBackendTag(t *testing.T) {
-	type test struct {
-		Foo string `config:"foo,backend:store"`
-		Bar string `config:"bar,backend:env"`
+type backendCalled struct {
+	store  map[string]string
+	called int
+}
+
+func (m *backendCalled) Get(ctx context.Context, key string) ([]byte, error) {
+	m.called++
+	data, ok := m.store[key]
+	if !ok {
+		return nil, backend.ErrNotFound
 	}
 
-	err := os.Setenv("BAR", "baz")
-	require.NoError(t, err)
+	return []byte(data), nil
+}
+
+func (backendCalled) Name() string {
+	return "backendCalled"
+}
+
+type backendNotCalled struct {
+	store  map[string]string
+	called int
+}
+
+func (m *backendNotCalled) Get(ctx context.Context, key string) ([]byte, error) {
+	m.called++
+	data, ok := m.store[key]
+	if !ok {
+		return nil, backend.ErrNotFound
+	}
+
+	return []byte(data), nil
+}
+
+func (backendNotCalled) Name() string {
+	return "backendNotCalled"
+}
+
+func TestBackendTag(t *testing.T) {
+	type test struct {
+		Tikka  string `config:"tikka,backend:store"`
+		Cheese string `config:"cheese,required,backend:backendCalled"`
+	}
+
+	backendNotCalled := &backendNotCalled{
+		store: make(map[string]string),
+	}
+	backendNotCalled.store["cheese"] = "nan"
 
 	myStore := make(store)
-	myStore["foo"] = "fuu"
+	myStore["tikka"] = "masala"
 
-	ldr := confita.NewLoader(env.NewBackend(), myStore)
+	t.Run("OK", func(t *testing.T) {
+		backendCalled := &backendCalled{
+			store: make(map[string]string),
+		}
+		backendCalled.store["cheese"] = "nan"
 
-	var cfg test
-	err = ldr.Load(context.Background(), &cfg)
-	require.NoError(t, err)
+		ldr := confita.NewLoader(myStore, backendCalled, backendNotCalled)
 
-	assert.Equal(t, "fuu", cfg.Foo)
-	assert.Equal(t, "baz", cfg.Bar)
+		var cfg test
+		err := ldr.Load(context.Background(), &cfg)
+		require.NoError(t, err)
+
+		assert.Equal(t, "nan", cfg.Cheese)
+		assert.Equal(t, "masala", cfg.Tikka)
+		assert.Equal(t, 1, backendCalled.called)
+		assert.Equal(t, 0, backendNotCalled.called)
+	})
+
+	t.Run("NOK", func(t *testing.T) {
+		backendCalled := &backendCalled{
+			store: make(map[string]string),
+		}
+
+		ldr := confita.NewLoader(myStore, backendCalled, backendNotCalled)
+
+		var cfg test
+		err := ldr.Load(context.Background(), &cfg)
+		require.EqualError(t, err, "required key 'cheese' for field 'Cheese' not found")
+
+		assert.Equal(t, 1, backendCalled.called)
+		assert.Equal(t, 0, backendNotCalled.called)
+	})
+
 }
